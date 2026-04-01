@@ -1,0 +1,22 @@
+title: Start
+---
+Buddy: Greetings, wanderer. These internets can be dangerous alone.
+Buddy: Let me help you!
+Buddy: I can read the page, and see if you're confused.
+Buddy: I need access to the webcam 🤪
+
+-> Okay fine
+    Buddy: Alright let's go
+    <<jump OnWebcam>>
+-> No way
+    Buddy: Are you suspicious?
+    <<jump ExplainPrivacy>>
+===
+title: OnWebcam
+---
+Buddy: Alright so now that we have access...
+===
+title: ExplainPrivacy
+---
+Buddy: I have strict privacy rules
+===

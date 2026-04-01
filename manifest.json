@@ -9,12 +9,12 @@
   },
   "content_scripts": [
     {
-      "js": ["content.js"],
+      "js": ["yarn-bound.min.js", "content.js"],
       "matches": ["<all_urls>"]
     }
   ],
   "web_accessible_resources": [{
-     "resources": ["videos/default.webm"],
+     "resources": ["yarn-bound.min.js", "demo.yarn", "videos/default.webm"],
      "matches": ["<all_urls>"]
    }]
 }
