@@ -11,15 +11,10 @@
     {
       "js": ["content.js"],
       "matches": ["<all_urls>"]
-    },
-    {
-      "js": ["main.js"],
-      "matches": ["<all_urls>"],
-      "world": "MAIN"
     }
   ],
   "web_accessible_resources": [{
-     "resources": ["three.min.js"],
+     "resources": ["videos/default.webm"],
      "matches": ["<all_urls>"]
    }]
 }

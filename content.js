@@ -1,18 +1,14 @@
-// import * as THREE from "./three.module.js"
 console.log('content.js: injected into the page');
-
-const script = document.createElement('script');
-script.src = './three.min.js';
-script.src = chrome.runtime.getURL('three.min.js');
-document.head.appendChild(script);
 
 
 // document.body.innerHTML +=  'Hello at the end of the page!!'
-script.onload = () => {
-  console.log('content.js: loaded threejs');
 
-  // const scene = new THREE.Scene();
-  // etc.
-};
+const video = document.createElement('video');
+video.src = chrome.runtime.getURL('videos/default.webm');
+video.autoplay = true;
+video.loop = true;
+video.muted = true;
+video.style.cssText = 'position: fixed; top: 0; right: 0; width: 480px; height: 270px; object-fit: contain; z-index: 999; pointer-events: none; ';
+document.body.appendChild(video);
 
-// import * as THREE from 'three';
+console.log(video);
