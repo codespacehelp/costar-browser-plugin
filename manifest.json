@@ -1,0 +1,25 @@
+{
+  "name": "Cöstar",
+  "description": "The helpful browser bot!",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "hello.html",
+    "default_icon": "costar.png"
+  },
+  "content_scripts": [
+    {
+      "js": ["content.js"],
+      "matches": ["<all_urls>"]
+    },
+    {
+      "js": ["main.js"],
+      "matches": ["<all_urls>"],
+      "world": "MAIN"
+    }
+  ],
+  "web_accessible_resources": [{
+     "resources": ["three.min.js"],
+     "matches": ["<all_urls>"]
+   }]
+}
