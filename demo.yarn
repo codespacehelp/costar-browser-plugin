@@ -94,10 +94,8 @@ Buddy: Visible heading keyword dialog placeholder.
 ===
 title: MouseHectic
 ---
-Buddy: Hectic mouse movement trigger placeholder.
-<<PlayAnimation attention loop=false>>
-Buddy: Mouse movement dialog placeholder.
-<<PlayAnimation idle loop=true>>
+<<PlayAnimation hectic loop=false>>
+Buddy: Hectic mouse movement detected
 ===
 title: UserIdle
 ---

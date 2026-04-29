@@ -15,7 +15,7 @@
     }
   ],
   "web_accessible_resources": [{
-     "resources": ["yarn-bound.min.js", "demo.yarn", "triggers.json", "videos/idle.webm", "videos/twirl.webm", "assets/costar-google-logo.png"],
+     "resources": ["yarn-bound.min.js", "demo.yarn", "triggers.json", "videos/idle.webm", "videos/twirl.webm", "videos/hectic.webm", "assets/costar-google-logo.png"],
      "matches": ["<all_urls>"]
    }]
 }

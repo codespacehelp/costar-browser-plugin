@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Demo trigger definitions for the Cöstar browser companion. Triggers can start Yarn nodes or dispatch direct page/buddy actions.",
+  "description": "Demo trigger definitions for the Cöstar browser companion. Triggers detect conditions and select Yarn nodes.",
   "defaults": {
     "cooldownMs": 30000,
     "priority": 50,
@@ -31,7 +31,7 @@
         "https://hbvl.be/*"
       ],
       "priority": 80,
-      "oncePerPage": true,
+      "oncePerUrl": true,
       "yarnNode": "NewsSiteDetected"
     },
     {
@@ -58,7 +58,8 @@
         "minimumDirectionChanges": 12
       },
       "priority": 60,
-      "cooldownMs": 60000,
+      "cooldownMs": 10000,
+      "oncePerPage": false,
       "yarnNode": "MouseHectic"
     },
     {

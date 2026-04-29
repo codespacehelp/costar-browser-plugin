@@ -3,6 +3,8 @@ console.log('content.js: injected into the page');
 const IDLE_VIDEO_PATH = 'videos/idle.webm';
 
 let runner;
+let triggerConfig;
+const triggeredAt = new Map();
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('yarn-bound.min.js');
@@ -12,7 +14,10 @@ script.onload = async () => {
   console.log('yarn-bound.min.js loaded');
   runner = new self.YarnBound({dialogue});
   renderCurrentResult();
+  triggerConfig = await loadTriggerConfig();
   applyUrlTriggers();
+  watchUrlChanges();
+  applyMouseMovementTriggers();
   // runner.advance()
   // console.log(runner.currentResult);
 
@@ -26,6 +31,51 @@ function wildcardToRegExp(pattern) {
 
 function urlMatches(pattern) {
   return wildcardToRegExp(pattern).test(window.location.href);
+}
+
+async function loadTriggerConfig() {
+  const res = await fetch(chrome.runtime.getURL('triggers.json'));
+  return res.json();
+}
+
+function getTriggerDefaults() {
+  return triggerConfig?.defaults || {};
+}
+
+function getTriggerKey(trigger) {
+  if (trigger.oncePerUrl) {
+    return `${trigger.id}:${window.location.href}`;
+  }
+
+  return trigger.id;
+}
+
+function canRunTrigger(trigger) {
+  const defaults = getTriggerDefaults();
+  const oncePerPage = trigger.oncePerPage ?? defaults.oncePerPage ?? false;
+  const cooldownMs = trigger.cooldownMs ?? defaults.cooldownMs ?? 0;
+  const triggerKey = getTriggerKey(trigger);
+  const lastTriggeredAt = triggeredAt.get(triggerKey) || 0;
+
+  if (oncePerPage && lastTriggeredAt) {
+    return false;
+  }
+
+  if (Date.now() - lastTriggeredAt < cooldownMs) {
+    return false;
+  }
+
+  return true;
+}
+
+function runTrigger(trigger) {
+  if (!trigger?.yarnNode || !canRunTrigger(trigger)) {
+    return;
+  }
+
+  triggeredAt.set(getTriggerKey(trigger), Date.now());
+  runner.jump(trigger.yarnNode);
+  renderCurrentResult();
 }
 
 function playAnimation(src, { loop = false, returnToIdle = true } = {}) {
@@ -44,10 +94,8 @@ function playAnimation(src, { loop = false, returnToIdle = true } = {}) {
   }
 }
 
-async function applyUrlTriggers() {
-  const res = await fetch(chrome.runtime.getURL('triggers.json'));
-  const config = await res.json();
-  const urlTrigger = config.triggers.find((trigger) => {
+function applyUrlTriggers() {
+  const urlTrigger = triggerConfig.triggers.find((trigger) => {
     return trigger.type === 'url'
       && Array.isArray(trigger.match)
       && trigger.match.some(urlMatches);
@@ -57,10 +105,130 @@ async function applyUrlTriggers() {
     console.log('urlTrigger', urlTrigger);  
   }
 
-  if (urlTrigger?.yarnNode) {
-    runner.jump(urlTrigger.yarnNode);
-    renderCurrentResult();
+  runTrigger(urlTrigger);
+}
+
+function watchUrlChanges() {
+  let currentUrl = window.location.href;
+
+  const handleUrlChange = () => {
+    if (window.location.href === currentUrl) {
+      return;
+    }
+
+    currentUrl = window.location.href;
+    applyUrlTriggers();
+  };
+
+  const originalPushState = history.pushState;
+  const originalReplaceState = history.replaceState;
+
+  history.pushState = function pushState(...args) {
+    const result = originalPushState.apply(this, args);
+    handleUrlChange();
+    return result;
+  };
+
+  history.replaceState = function replaceState(...args) {
+    const result = originalReplaceState.apply(this, args);
+    handleUrlChange();
+    return result;
+  };
+
+  window.addEventListener('popstate', handleUrlChange);
+  window.addEventListener('hashchange', handleUrlChange);
+}
+
+function getPointerDirection(previousPoint, nextPoint) {
+  const dx = nextPoint.x - previousPoint.x;
+  const dy = nextPoint.y - previousPoint.y;
+
+  if (dx === 0 && dy === 0) {
+    return null;
   }
+
+  return Math.atan2(dy, dx);
+}
+
+function didPointerDirectionChange(previousDirection, nextDirection) {
+  if (previousDirection === null || nextDirection === null) {
+    return false;
+  }
+
+  const angleDelta = Math.abs(Math.atan2(
+    Math.sin(nextDirection - previousDirection),
+    Math.cos(nextDirection - previousDirection),
+  ));
+
+  return angleDelta > Math.PI / 4;
+}
+
+function applyMouseMovementTriggers() {
+  const mouseMovementTriggers = triggerConfig.triggers.filter((trigger) => {
+    return trigger.type === 'mouseMovement';
+  });
+
+  if (mouseMovementTriggers.length === 0) {
+    return;
+  }
+
+  let points = [];
+
+  window.addEventListener('mousemove', (event) => {
+    const now = Date.now();
+
+    points.push({
+      x: event.clientX,
+      y: event.clientY,
+      time: now,
+    });
+
+    const largestWindowMs = Math.max(...mouseMovementTriggers.map((trigger) => {
+      return trigger.match?.windowMs ?? 0;
+    }));
+
+    points = points.filter((point) => now - point.time <= largestWindowMs);
+
+    const matchingTrigger = mouseMovementTriggers.find((trigger) => {
+      const windowMs = trigger.match?.windowMs ?? 0;
+      const minimumDistancePx = trigger.match?.minimumDistancePx ?? 0;
+      const minimumDirectionChanges = trigger.match?.minimumDirectionChanges ?? 0;
+      const windowPoints = points.filter((point) => now - point.time <= windowMs);
+
+      if (windowPoints.length < 2 || !canRunTrigger(trigger)) {
+        return false;
+      }
+
+      let totalDistance = 0;
+      let directionChanges = 0;
+      let previousDirection = null;
+
+      for (let idx = 1; idx < windowPoints.length; idx += 1) {
+        const previousPoint = windowPoints[idx - 1];
+        const nextPoint = windowPoints[idx];
+        const dx = nextPoint.x - previousPoint.x;
+        const dy = nextPoint.y - previousPoint.y;
+        const nextDirection = getPointerDirection(previousPoint, nextPoint);
+
+        totalDistance += Math.hypot(dx, dy);
+
+        if (didPointerDirectionChange(previousDirection, nextDirection)) {
+          directionChanges += 1;
+        }
+
+        previousDirection = nextDirection ?? previousDirection;
+      }
+
+      return totalDistance >= minimumDistancePx
+        && directionChanges >= minimumDirectionChanges;
+    });
+
+    if (matchingTrigger) {
+      console.log('mouseMovementTrigger', matchingTrigger);
+      points = [];
+      runTrigger(matchingTrigger);
+    }
+  });
 }
 
 function parseCommand(command) {
