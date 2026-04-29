@@ -1,22 +1,278 @@
 title: Start
 ---
-Buddy: Greetings, wanderer. These internets can be dangerous alone.
-Buddy: Let me help you!
-Buddy: I can read the page, and see if you're confused.
-Buddy: I need access to the webcam 🤪
+<<DoNothing>>
+===
+title: Setup
+---
+Buddy: Greetings, human. I am known as :O<o=".
+Buddy: You may call me a Cöstar.
+Buddy: I am here to accompany you on your universal searches.
+Buddy: Through our digital barrier, I can sense you're confused.
+Buddy: Would you like my assistance?
 
--> Okay fine
-    Buddy: Alright let's go
-    <<jump OnWebcam>>
--> No way
+-> I would love some help!
+    Buddy: Splendid.
+    <<jump OnStep1Interaction>>
+-> Can I trust you?
     Buddy: Are you suspicious?
     <<jump ExplainPrivacy>>
 ===
-title: OnWebcam
----
-Buddy: Alright so now that we have access...
-===
 title: ExplainPrivacy
 ---
-Buddy: I have strict privacy rules
+Buddy: I am kin to a species of interstellar electromagnetic current interpreters.
+Buddy: Your kind may understand it better as "Web Assistant".
+Buddy: We have a strict honor code...
+Buddy: ...and even stricter privacy rules.
+Buddy: All of my activity remains on your end.
+Buddy: Do you still wish to keep our connection?
+
+-> Yes, I feel I can trust you!
+    Buddy: Wonderful!
+    <<jump OnStep1Interaction>>
+-> No, I don't think this will work...
+    Buddy: That is unfortunate.
+    <<jump ForceEnd>>
+===
+title: ForceEnd
+---
+Buddy: I wish you farewell and safe web searching.
+Buddy: / Signal lost. /
+===
+title: OnStep1Interaction
+---
+Buddy: How may I assist you?
+
+-> Show setup demo.
+    <<jump SetupDemo>>
+-> Show trigger demos.
+    <<jump TriggerDemoMenu>>
+-> Show action demos.
+    <<jump ActionDemoMenu>>
+
+===
+title: SetupDemo
+---
+Buddy: Setup dialog node placeholder.
+Buddy: This node is intended to be triggered by the costar-setup URL pattern.
+<<PlayAnimation setup_intro loop=false>>
+Buddy: Setup flow placeholder text.
+<<PlayAnimation idle loop=true>>
+===
+title: TriggerDemoMenu
+---
+Buddy: Trigger demo menu placeholder.
+
+-> URL pattern trigger.
+    <<jump NewsSiteDetected>>
+-> Visible keyword trigger.
+    <<jump VisibleKeywordDetected>>
+-> Mouse movement trigger.
+    <<jump MouseHectic>>
+-> No activity trigger.
+    <<jump UserIdle>>
+-> Fast scrolling trigger.
+    <<jump FastScroll>>
+-> Time on page trigger.
+    <<jump LongPageVisit>>
+-> Slow loading page trigger.
+    <<jump SlowLoadingPage>>
+-> Suggested trigger demos.
+    <<jump SuggestedTriggerDemoMenu>>
+===
+title: NewsSiteDetected
+---
+<<PlayAnimation twirl loop=false>>
+Buddy: NewsSiteDetected.
+===
+title: VisibleKeywordDetected
+---
+Buddy: Visible keyword trigger placeholder.
+<<PlayAnimation keyword_detected loop=false>>
+<<HighlightKeywords keywords="pricing,deadline,urgent" style="info">>
+Buddy: Visible heading keyword dialog placeholder.
+<<PlayAnimation idle loop=true>>
+===
+title: MouseHectic
+---
+Buddy: Hectic mouse movement trigger placeholder.
+<<PlayAnimation attention loop=false>>
+Buddy: Mouse movement dialog placeholder.
+<<PlayAnimation idle loop=true>>
+===
+title: UserIdle
+---
+Buddy: Inactivity trigger placeholder.
+<<PlayAnimation idle_prompt loop=false>>
+Buddy: Idle dialog placeholder.
+<<PlayAnimation idle loop=true>>
+===
+title: FastScroll
+---
+Buddy: Fast scrolling trigger placeholder.
+<<PlayAnimation scroll_detected loop=false>>
+<<ScrollPage direction="down" amount="viewport">>
+Buddy: Fast scroll dialog placeholder.
+<<PlayAnimation idle loop=true>>
+===
+title: LongPageVisit
+---
+Buddy: Time on page trigger placeholder.
+<<PlayAnimation time_on_page loop=false>>
+Buddy: Long visit dialog placeholder.
+<<PlayAnimation idle loop=true>>
+===
+title: SlowLoadingPage
+---
+Buddy: Slow loading page trigger placeholder.
+<<PlayAnimation slow_load loop=false>>
+Buddy: Slow loading dialog placeholder.
+<<PlayAnimation idle loop=true>>
+===
+title: SuggestedTriggerDemoMenu
+---
+Buddy: Suggested trigger demo menu placeholder.
+
+-> Rage clicking trigger.
+    <<jump RageClicking>>
+-> Form hesitation trigger.
+    <<jump FormHesitation>>
+-> Search refinement trigger.
+    <<jump SearchRefinement>>
+-> Returned to tab trigger.
+    <<jump ReturnedToTab>>
+-> Visible error text trigger.
+    <<jump VisibleErrorText>>
+===
+title: RageClicking
+---
+Buddy: Repeated clicking trigger placeholder.
+<<PlayAnimation attention loop=false>>
+Buddy: Rage clicking dialog placeholder.
+<<PlayAnimation idle loop=true>>
+===
+title: FormHesitation
+---
+Buddy: Form hesitation trigger placeholder.
+<<PlayAnimation form_help loop=false>>
+Buddy: Form hesitation dialog placeholder.
+<<FocusElement selector="input:focus, textarea:focus, select:focus">>
+<<PlayAnimation idle loop=true>>
+===
+title: SearchRefinement
+---
+Buddy: Search refinement trigger placeholder.
+<<PlayAnimation search_help loop=false>>
+Buddy: Search refinement dialog placeholder.
+<<ShowCompanionFrame title="Search options" items="Refine query|Open advanced search|Clear search">>
+<<PlayAnimation idle loop=true>>
+===
+title: ReturnedToTab
+---
+Buddy: Returned to tab trigger placeholder.
+<<PlayAnimation tab_return loop=false>>
+Buddy: Returned to tab dialog placeholder.
+<<PlayAnimation idle loop=true>>
+===
+title: VisibleErrorText
+---
+Buddy: Visible error text trigger placeholder.
+<<PlayAnimation error_detected loop=false>>
+<<HighlightKeywords keywords="error,failed,try again,not found" style="warning">>
+Buddy: Error text dialog placeholder.
+<<PlayAnimation idle loop=true>>
+===
+title: ActionDemoMenu
+---
+Buddy: Action demo menu placeholder.
+
+-> Play a one-shot animation.
+    <<jump ActionPlayAnimation>>
+-> Show extra frame.
+    <<jump ActionShowCompanionFrame>>
+-> Highlight keywords.
+    <<jump ActionHighlightKeywords>>
+-> Resize keywords.
+    <<jump ActionResizeKeywords>>
+-> Replace an image.
+    <<jump ActionReplaceImage>>
+-> Suggested action demos.
+    <<jump SuggestedActionDemoMenu>>
+===
+title: ActionPlayAnimation
+---
+Buddy: Play animation action placeholder.
+<<PlayAnimation point_out loop=false>>
+Buddy: The animation should return to the idle loop when complete.
+<<PlayAnimation idle loop=true>>
+===
+title: ActionShowCompanionFrame
+---
+Buddy: Show companion frame action placeholder.
+<<ShowCompanionFrame title="Useful links" items="Primary link|Secondary link|Related page">>
+Buddy: Extra frame content placeholder.
+===
+title: ActionHighlightKeywords
+---
+Buddy: Highlight keywords action placeholder.
+<<HighlightKeywords keywords="pricing,deadline,urgent" style="info">>
+Buddy: Highlight result placeholder.
+===
+title: ActionResizeKeywords
+---
+Buddy: Resize keywords action placeholder.
+<<ResizeKeywords keywords="pricing,deadline,urgent" scale="1.25">>
+Buddy: Resize result placeholder.
+===
+title: ActionReplaceImage
+---
+Buddy: Replace image action placeholder.
+<<ReplaceImage selector="img[alt='Google']" asset="assets/costar-google-logo.png">>
+Buddy: Image replacement result placeholder.
+===
+title: SuggestedActionDemoMenu
+---
+Buddy: Suggested action demo menu placeholder.
+
+-> Focus an element.
+    <<jump ActionFocusElement>>
+-> Dim page region.
+    <<jump ActionDimPageRegion>>
+-> Add page marker.
+    <<jump ActionAddPageMarker>>
+-> Summarize visible section.
+    <<jump ActionSummarizeVisibleSection>>
+-> Open and close panel.
+    <<jump ActionToggleCompanionPanel>>
+===
+title: ActionFocusElement
+---
+Buddy: Focus element action placeholder.
+<<FocusElement selector="main, [role='main'], article">>
+Buddy: Focus result placeholder.
+===
+title: ActionDimPageRegion
+---
+Buddy: Dim page region action placeholder.
+<<DimPageRegion selector="aside, [role='complementary']" opacity="0.35">>
+Buddy: Dim result placeholder.
+===
+title: ActionAddPageMarker
+---
+Buddy: Add page marker action placeholder.
+<<AddPageMarker selector="h1" label="Start here">>
+Buddy: Marker result placeholder.
+===
+title: ActionSummarizeVisibleSection
+---
+Buddy: Summarize visible section action placeholder.
+<<SummarizeVisibleSection target="viewport">>
+Buddy: Summary result placeholder.
+===
+title: ActionToggleCompanionPanel
+---
+Buddy: Toggle companion panel action placeholder.
+<<OpenCompanionPanel panel="links">>
+Buddy: Panel open placeholder.
+<<CloseCompanionPanel panel="links">>
+Buddy: Panel close placeholder.
 ===

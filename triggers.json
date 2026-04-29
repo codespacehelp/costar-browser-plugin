@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "description": "Demo trigger definitions for the Cöstar browser companion. Triggers can start Yarn nodes or dispatch direct page/buddy actions.",
+  "defaults": {
+    "cooldownMs": 30000,
+    "priority": 50,
+    "oncePerPage": false
+  },
+  "triggers": [
+    {
+      "id": "url-costar-setup",
+      "type": "url",
+      "description": "Start setup flow on any URL containing costar-setup.",
+      "match": ["*costar-setup*"],
+      "priority": 100,
+      "oncePerPage": true,
+      "yarnNode": "Setup"
+    },
+    {
+      "id": "url-news-site",
+      "type": "url",
+      "description": "Recognize Belgian news sites and start a site-specific node.",
+      "match": [
+        "https://www.vrt.be/vrtnws/nl/*",
+        "https://vrt.be/vrtnws/nl/*",
+        "https://www.standaard.be/*",
+        "https://standaard.be/*",
+        "https://www.hln.be/*",
+        "https://hln.be/*",
+        "https://www.hbvl.be/*",
+        "https://hbvl.be/*"
+      ],
+      "priority": 80,
+      "oncePerPage": true,
+      "yarnNode": "NewsSiteDetected"
+    },
+    {
+      "id": "visible-keyword-large-heading",
+      "type": "visibleText",
+      "description": "React when important visible keywords appear in prominent page text.",
+      "match": {
+        "keywords": ["pricing", "deadline", "urgent"],
+        "selectors": ["h1", "h2", "[role='heading']"],
+        "minimumFontSizePx": 24,
+        "minimumVisibleRatio": 0.75
+      },
+      "priority": 70,
+      "cooldownMs": 45000,
+      "yarnNode": "VisibleKeywordDetected"
+    },
+    {
+      "id": "mouse-hectic",
+      "type": "mouseMovement",
+      "description": "React to rapid pointer movement that may indicate stress or searching.",
+      "match": {
+        "windowMs": 3000,
+        "minimumDistancePx": 1800,
+        "minimumDirectionChanges": 12
+      },
+      "priority": 60,
+      "cooldownMs": 60000,
+      "yarnNode": "MouseHectic"
+    },
+    {
+      "id": "mouse-idle",
+      "type": "inactivity",
+      "description": "React when the user has not moved the mouse or typed for a while.",
+      "match": {
+        "idleMs": 30000,
+        "includeKeyboard": true,
+        "includeScroll": true
+      },
+      "priority": 40,
+      "cooldownMs": 90000,
+      "yarnNode": "UserIdle"
+    },
+    {
+      "id": "fast-scroll",
+      "type": "scroll",
+      "description": "React when the user scrolls quickly through the page.",
+      "match": {
+        "windowMs": 2000,
+        "minimumDistancePx": 2500,
+        "minimumVelocityPxPerSecond": 1200
+      },
+      "priority": 55,
+      "cooldownMs": 45000,
+      "yarnNode": "FastScroll"
+    },
+    {
+      "id": "time-on-page",
+      "type": "timer",
+      "description": "React after the user has remained on the page for a while.",
+      "match": {
+        "elapsedMs": 30000,
+        "requiresVisibleTab": true
+      },
+      "priority": 35,
+      "oncePerPage": true,
+      "yarnNode": "LongPageVisit"
+    },
+    {
+      "id": "slow-loading-page",
+      "type": "performance",
+      "description": "React when page resources take unusually long to load.",
+      "match": {
+        "largestContentfulPaintMs": 4000,
+        "resourceLoadMs": 5000,
+        "minimumSlowResources": 3
+      },
+      "priority": 65,
+      "oncePerPage": true,
+      "yarnNode": "SlowLoadingPage"
+    },
+    {
+      "id": "rage-clicking",
+      "type": "clickPattern",
+      "description": "Suggested trigger: repeated clicks in the same area.",
+      "match": {
+        "windowMs": 2000,
+        "minimumClicks": 5,
+        "radiusPx": 40
+      },
+      "priority": 75,
+      "cooldownMs": 60000,
+      "yarnNode": "RageClicking"
+    },
+    {
+      "id": "form-hesitation",
+      "type": "formInteraction",
+      "description": "Suggested trigger: focus remains on one form field without input.",
+      "match": {
+        "selector": "input, textarea, select",
+        "focusedWithoutInputMs": 12000
+      },
+      "priority": 45,
+      "cooldownMs": 60000,
+      "yarnNode": "FormHesitation"
+    },
+    {
+      "id": "repeated-search-refinement",
+      "type": "inputPattern",
+      "description": "Suggested trigger: user repeatedly rewrites a search query.",
+      "match": {
+        "selectors": ["input[type='search']", "input[name='q']", "textarea[name='q']"],
+        "minimumEdits": 4,
+        "windowMs": 20000
+      },
+      "priority": 50,
+      "cooldownMs": 60000,
+      "yarnNode": "SearchRefinement"
+    },
+    {
+      "id": "tab-return",
+      "type": "visibility",
+      "description": "Suggested trigger: user returns to a tab after being away.",
+      "match": {
+        "hiddenForMs": 60000,
+        "state": "visible"
+      },
+      "priority": 30,
+      "cooldownMs": 120000,
+      "yarnNode": "ReturnedToTab"
+    },
+    {
+      "id": "visible-error-text",
+      "type": "visibleText",
+      "description": "Suggested trigger: visible error or failure language appears.",
+      "match": {
+        "keywords": ["error", "failed", "try again", "not found"],
+        "selectors": ["body"],
+        "minimumFontSizePx": 12,
+        "minimumVisibleRatio": 0.5
+      },
+      "priority": 70,
+      "cooldownMs": 60000,
+      "yarnNode": "VisibleErrorText"
+    }
+  ]
+}

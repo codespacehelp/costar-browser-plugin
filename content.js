@@ -1,5 +1,7 @@
 console.log('content.js: injected into the page');
 
+const IDLE_VIDEO_PATH = 'videos/idle.webm';
+
 let runner;
 
 const script = document.createElement('script');
@@ -7,62 +9,151 @@ script.src = chrome.runtime.getURL('yarn-bound.min.js');
 script.onload = async () => {
   const res = await fetch(chrome.runtime.getURL('demo.yarn'));
   const dialogue = await res.text();
-  console.log(dialogue);
   console.log('yarn-bound.min.js loaded');
   runner = new self.YarnBound({dialogue});
-  console.log(runner.currentResult);
-  chatText.textContent = runner.currentResult.text;
+  renderCurrentResult();
+  applyUrlTriggers();
   // runner.advance()
   // console.log(runner.currentResult);
 
 };
 document.head.appendChild(script);
 
+function wildcardToRegExp(pattern) {
+  const escapedPattern = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^${escapedPattern.replaceAll('*', '.*')}$`);
+}
+
+function urlMatches(pattern) {
+  return wildcardToRegExp(pattern).test(window.location.href);
+}
+
+function playAnimation(src, { loop = false, returnToIdle = true } = {}) {
+  video.loop = loop;
+  video.src = chrome.runtime.getURL(src);
+  video.currentTime = 0;
+  video.play();
+
+  if (returnToIdle && !loop) {
+    video.onended = () => {
+      video.onended = null;
+      video.loop = true;
+      video.src = chrome.runtime.getURL(IDLE_VIDEO_PATH);
+      video.play();
+    };
+  }
+}
+
+async function applyUrlTriggers() {
+  const res = await fetch(chrome.runtime.getURL('triggers.json'));
+  const config = await res.json();
+  const urlTrigger = config.triggers.find((trigger) => {
+    return trigger.type === 'url'
+      && Array.isArray(trigger.match)
+      && trigger.match.some(urlMatches);
+  });
+
+  if (urlTrigger) {
+    console.log('urlTrigger', urlTrigger);  
+  }
+
+  if (urlTrigger?.yarnNode) {
+    runner.jump(urlTrigger.yarnNode);
+    renderCurrentResult();
+  }
+}
+
+function parseCommand(command) {
+  const [name, ...tokens] = command.split(/\s+/);
+  const args = { positional: [] };
+
+  tokens.forEach((token) => {
+    const [key, rawValue] = token.split('=');
+    if (key && rawValue !== undefined) {
+      args[key] = rawValue.replace(/^"|"$/g, '');
+    } else if (token) {
+      args.positional.push(token);
+    }
+  });
+
+  return { name, args };
+}
+
+function executeCommand(command) {
+  const { name, args } = parseCommand(command);
+
+  if (name === 'DoNothing') {
+    return;
+  }
+
+  if (name === 'PlayAnimation') {
+    const animationName = args.src || args.animation || args.name || args.positional[0];
+    const src = animationName.includes('/') ? animationName : `videos/${animationName}.webm`;
+    playAnimation(src, {
+      loop: args.loop === 'true',
+      returnToIdle: args.returnToIdle !== 'false',
+    });
+  }
+}
+
+function renderCurrentResult() {
+  console.log(runner.currentResult);
+
+  while (runner.currentResult.command) {
+    executeCommand(runner.currentResult.command);
+    runner.advance();
+  }
+
+  if (runner.currentResult.text) {
+    chatText.style.display = 'block';
+    chatOptions.style.display = 'none';
+    chatText.textContent = runner.currentResult.text;
+  } else if (runner.currentResult.options) {
+    chatText.style.display = 'none';
+    chatOptions.style.display = 'flex';
+    chatOptions.innerHTML = runner.currentResult.options.map((opt, idx) => `<div>${idx + 1}. ${opt.text}</div>`).join('\n');
+    Array.from(chatOptions.children).forEach((child, idx) => {
+      child.className = 'chat-option';
+      child.addEventListener('click', () => {
+        advanceDialogue(idx);
+      });
+    });
+  } else {
+    chatText.style.display = 'none';
+    chatOptions.style.display = 'none';
+  }
+}
+
 function advanceDialogue(idx) {
   if (runner) {
     runner.advance(idx);
-    console.log(runner.currentResult);
-    if (runner.currentResult.text) {
-      chatText.style.display = 'block';
-      chatOptions.style.display = 'none';
-      chatText.textContent = runner.currentResult.text;
-    } else if (runner.currentResult.options) {
-      chatText.style.display = 'none';
-      chatOptions.style.display = 'flex';
-      chatOptions.innerHTML = runner.currentResult.options.map((opt, idx) => `<div>${idx + 1}. ${opt.text}</div>`).join('\n');
-      Array.from(chatOptions.children).forEach((child, idx) => {
-        child.style.cssText = 'flex: 1; padding: 5px; cursor: pointer;';
-        child.addEventListener('click', () => {
-          advanceDialogue(idx);
-        });
-      });
-    }
+    renderCurrentResult();
   }
 }
 
 const buddyContainer = document.createElement('div');
-buddyContainer.style.cssText = 'position: fixed; top: 0; right: 0; width: 480px; height: 320px; z-index: 999; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center;';
+buddyContainer.id = 'costar-plugin';
 document.body.appendChild(buddyContainer);
 
 const video = document.createElement('video');
-video.src = chrome.runtime.getURL('videos/default.webm');
+video.src = chrome.runtime.getURL(IDLE_VIDEO_PATH);
 video.autoplay = true;
 video.loop = true;
 video.muted = true;
-video.style.cssText = 'width: 480px; height: 270px;';
+video.className = 'video-player';
 buddyContainer.appendChild(video);
 
 const chatBox = document.createElement('div');
-chatBox.style.cssText = 'width: 480px; height: 50px; background: rgba(0, 0, 0, 0.5); color: white; font-family: sans-serif; font-size: 16px; display: flex; align-items: center; justify-content: center; margin-top: 10px; pointer-events: auto; cursor: pointer;';
+chatBox.className = 'chat-box';
 buddyContainer.appendChild(chatBox);
 chatBox.addEventListener('click', advanceDialogue);
 
 const chatText = document.createElement('div');
-chatText.style.cssText = 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;';
+chatText.className = 'chat-text';
 chatBox.appendChild(chatText);
 
 const chatOptions = document.createElement('div');
-chatOptions.style.cssText = 'width: 100%; height: 100%; display: none; align-items: center; justify-content: center;';
+chatOptions.className = 'chat-options';
 chatBox.appendChild(chatOptions);
 
 
