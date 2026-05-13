@@ -52,6 +52,10 @@ function getTriggerKey(trigger) {
 }
 
 function canRunTrigger(trigger) {
+  if (runner?.currentResult?.metadata?.interruptible === 'false') {
+    return false;
+  }
+
   const defaults = getTriggerDefaults();
   const oncePerPage = trigger.oncePerPage ?? defaults.oncePerPage ?? false;
   const cooldownMs = trigger.cooldownMs ?? defaults.cooldownMs ?? 0;

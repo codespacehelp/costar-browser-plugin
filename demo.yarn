@@ -1,10 +1,12 @@
 title: Start
+interruptible: false
 ---
 <<DoNothing>>
 
 <<jump Setup>>
 ===
 title: Setup
+interruptible: false
 ---
 Buddy: Greetings, human. I am known as :O<o=".
 Buddy: You may call me a Cöstar.
@@ -20,6 +22,7 @@ Buddy: Would you like my assistance?
     <<jump ExplainPrivacy>>
 ===
 title: ExplainPrivacy
+interruptible: false
 ---
 Buddy: I am kin to a species of interstellar electromagnetic current interpreters.
 Buddy: Your kind may understand it better as "Web Assistant".
@@ -36,6 +39,7 @@ Buddy: Do you still wish to keep our connection?
     <<jump ForceEnd>>
 ===
 title: ForceEnd
+interruptible: false
 ---
 Buddy: I wish you farewell and safe web searching.
 Buddy: / Signal lost. /
@@ -45,6 +49,7 @@ Buddy: / Signal lost. /
 <<jump Setup>>
 ===
 title: OnStep1Interaction
+interruptible: false
 ---
 Buddy: How may I assist you?
 
@@ -57,6 +62,7 @@ Buddy: How may I assist you?
 
 ===
 title: SetupDemo
+interruptible: false
 ---
 Buddy: Setup dialog node placeholder.
 Buddy: This node is intended to be triggered by the costar-setup URL pattern.
@@ -65,6 +71,7 @@ Buddy: Setup flow placeholder text.
 <<PlayAnimation idle loop=true>>
 ===
 title: TriggerDemoMenu
+interruptible: false
 ---
 Buddy: Here is an overview of the available triggers.
 
