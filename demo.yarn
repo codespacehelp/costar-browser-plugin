@@ -2,8 +2,6 @@ title: Start
 interruptible: false
 ---
 <<DoNothing>>
-
-<<jump Setup>>
 ===
 title: Setup
 interruptible: false

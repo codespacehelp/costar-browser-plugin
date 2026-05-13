@@ -9,13 +9,32 @@
   },
   "content_scripts": [
     {
-      "js": ["yarn-bound.min.js", "content.js"],
-      "css": ["buddy.css"],
-      "matches": ["<all_urls>"]
+      "js": [
+        "yarn-bound.min.js",
+        "content.js"
+      ],
+      "css": [
+        "buddy.css"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
-  "web_accessible_resources": [{
-     "resources": ["yarn-bound.min.js", "demo.yarn", "triggers.json", "videos/idle.webm", "videos/twirl.webm", "videos/hectic.webm", "assets/costar-google-logo.png"],
-     "matches": ["<all_urls>"]
-   }]
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "yarn-bound.min.js",
+        "demo.yarn",
+        "triggers.json",
+        "videos/idle.webm",
+        "videos/twirl.webm",
+        "videos/hectic.webm",
+        "assets/costar-google-logo.png"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
 }

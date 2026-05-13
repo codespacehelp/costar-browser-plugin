@@ -12,7 +12,7 @@ script.onload = async () => {
   const res = await fetch(chrome.runtime.getURL('demo.yarn'));
   const dialogue = await res.text();
   console.log('yarn-bound.min.js loaded');
-  runner = new self.YarnBound({dialogue});
+  runner = new self.YarnBound({ dialogue });
   renderCurrentResult();
   triggerConfig = await loadTriggerConfig();
   applyUrlTriggers();
@@ -52,10 +52,6 @@ function getTriggerKey(trigger) {
 }
 
 function canRunTrigger(trigger) {
-  if (runner?.currentResult?.metadata?.interruptible === 'false') {
-    return false;
-  }
-
   const defaults = getTriggerDefaults();
   const oncePerPage = trigger.oncePerPage ?? defaults.oncePerPage ?? false;
   const cooldownMs = trigger.cooldownMs ?? defaults.cooldownMs ?? 0;
@@ -110,7 +106,7 @@ function applyUrlTriggers() {
   });
 
   if (urlTrigger) {
-    console.log('urlTrigger', urlTrigger);  
+    console.log('urlTrigger', urlTrigger);
   }
 
   runTrigger(urlTrigger);
@@ -331,7 +327,7 @@ function executeCommand(command) {
   if (name === 'EnlargeKeywords') {
     const keywordsStr = args.keywords || args.positional[0] || "";
     const keywords = keywordsStr.split(',').map(k => k.trim()).filter(k => k.length > 0);
-    
+
     if (keywords.length > 0) {
       enlargeKeywordsOnPage(keywords);
     }
@@ -357,12 +353,12 @@ function enlargeKeywordsOnPage(keywords) {
   const escapedKeywords = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const pattern = new RegExp(`(${escapedKeywords.join('|')})`, 'gi');
 
-  while(node = walk.nextNode()) {
-    if (node.parentNode && 
-        node.parentNode.nodeName !== 'SCRIPT' && 
-        node.parentNode.nodeName !== 'STYLE' &&
-        node.parentNode.nodeName !== 'NOSCRIPT' &&
-        !node.parentNode.classList.contains('costar-enlarged-keyword')) {
+  while (node = walk.nextNode()) {
+    if (node.parentNode &&
+      node.parentNode.nodeName !== 'SCRIPT' &&
+      node.parentNode.nodeName !== 'STYLE' &&
+      node.parentNode.nodeName !== 'NOSCRIPT' &&
+      !node.parentNode.classList.contains('costar-enlarged-keyword')) {
       if (pattern.test(node.nodeValue)) {
         nodesToModify.push(node);
       }
@@ -372,7 +368,7 @@ function enlargeKeywordsOnPage(keywords) {
   nodesToModify.forEach(textNode => {
     const span = document.createElement('span');
     const escapedText = escapeHTML(textNode.nodeValue);
-    
+
     // We need to apply the pattern to the escaped text, but be careful if a keyword matches an HTML entity.
     // For simplicity, we just run the replacement.
     span.innerHTML = escapedText.replace(pattern, '<span class="costar-enlarged-keyword">$&</span>');
