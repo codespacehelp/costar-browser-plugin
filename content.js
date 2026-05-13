@@ -5,6 +5,7 @@ const IDLE_VIDEO_PATH = 'videos/idle.webm';
 let runner;
 let triggerConfig;
 const triggeredAt = new Map();
+let autoAdvanceTimeout = null;
 
 const script = document.createElement('script');
 script.src = chrome.runtime.getURL('yarn-bound.min.js');
@@ -379,6 +380,11 @@ function enlargeKeywordsOnPage(keywords) {
 function renderCurrentResult() {
   console.log(runner.currentResult);
 
+  if (autoAdvanceTimeout) {
+    clearTimeout(autoAdvanceTimeout);
+    autoAdvanceTimeout = null;
+  }
+
   while (runner.currentResult.command) {
     executeCommand(runner.currentResult.command);
     runner.advance();
@@ -401,6 +407,13 @@ function renderCurrentResult() {
   } else {
     chatText.style.display = 'none';
     chatOptions.style.display = 'none';
+  }
+
+  const autoAdvanceMs = runner.currentResult.metadata?.autoAdvance;
+  if (autoAdvanceMs && !runner.currentResult.options) {
+    autoAdvanceTimeout = setTimeout(() => {
+      advanceDialogue();
+    }, parseInt(autoAdvanceMs, 10));
   }
 }
 

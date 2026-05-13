@@ -91,6 +91,7 @@ Buddy: Here is an overview of the available triggers.
     <<jump SuggestedTriggerDemoMenu>>
 ===
 title: NewsSiteDetected
+autoAdvance: 3000
 ---
 <<PlayAnimation twirl loop=false>>
 Buddy: I have detected a source of information.
