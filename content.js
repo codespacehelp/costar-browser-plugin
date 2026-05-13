@@ -18,6 +18,7 @@ script.onload = async () => {
   applyUrlTriggers();
   watchUrlChanges();
   applyMouseMovementTriggers();
+  applyScrollTriggers();
   // runner.advance()
   // console.log(runner.currentResult);
 
@@ -79,17 +80,20 @@ function runTrigger(trigger) {
 }
 
 function playAnimation(src, { loop = false, returnToIdle = true } = {}) {
+  if (!chrome.runtime?.id) return;
+
   video.loop = loop;
   video.src = chrome.runtime.getURL(src);
   video.currentTime = 0;
-  video.play();
+  video.play().catch(console.error);
 
   if (returnToIdle && !loop) {
     video.onended = () => {
+      if (!chrome.runtime?.id) return;
       video.onended = null;
       video.loop = true;
       video.src = chrome.runtime.getURL(IDLE_VIDEO_PATH);
-      video.play();
+      video.play().catch(console.error);
     };
   }
 }
@@ -231,6 +235,63 @@ function applyMouseMovementTriggers() {
   });
 }
 
+function applyScrollTriggers() {
+  const scrollTriggers = triggerConfig.triggers.filter((trigger) => {
+    return trigger.type === 'scroll';
+  });
+
+  if (scrollTriggers.length === 0) {
+    return;
+  }
+
+  let points = [];
+
+  window.addEventListener('scroll', () => {
+    const now = Date.now();
+
+    points.push({
+      y: window.scrollY,
+      time: now,
+    });
+
+    const largestWindowMs = Math.max(...scrollTriggers.map((trigger) => {
+      return trigger.match?.windowMs ?? 0;
+    }));
+
+    points = points.filter((point) => now - point.time <= largestWindowMs);
+
+    const matchingTrigger = scrollTriggers.find((trigger) => {
+      const windowMs = trigger.match?.windowMs ?? 0;
+      const minimumDistancePx = trigger.match?.minimumDistancePx ?? 0;
+      const minimumVelocityPxPerSecond = trigger.match?.minimumVelocityPxPerSecond ?? 0;
+      const windowPoints = points.filter((point) => now - point.time <= windowMs);
+
+      if (windowPoints.length < 2 || !canRunTrigger(trigger)) {
+        return false;
+      }
+
+      let totalDistance = 0;
+      for (let idx = 1; idx < windowPoints.length; idx += 1) {
+        totalDistance += Math.abs(windowPoints[idx].y - windowPoints[idx - 1].y);
+      }
+
+      const durationMs = windowPoints[windowPoints.length - 1].time - windowPoints[0].time;
+      if (durationMs === 0) return false;
+
+      const velocityPxPerSecond = (totalDistance / durationMs) * 1000;
+
+      return totalDistance >= minimumDistancePx
+        && velocityPxPerSecond >= minimumVelocityPxPerSecond;
+    });
+
+    if (matchingTrigger) {
+      console.log('scrollTrigger', matchingTrigger);
+      points = [];
+      runTrigger(matchingTrigger);
+    }
+  });
+}
+
 function parseCommand(command) {
   const [name, ...tokens] = command.split(/\s+/);
   const args = { positional: [] };
@@ -262,6 +323,57 @@ function executeCommand(command) {
       returnToIdle: args.returnToIdle !== 'false',
     });
   }
+
+  if (name === 'EnlargeKeywords') {
+    const keywordsStr = args.keywords || args.positional[0] || "";
+    const keywords = keywordsStr.split(',').map(k => k.trim()).filter(k => k.length > 0);
+    
+    if (keywords.length > 0) {
+      enlargeKeywordsOnPage(keywords);
+    }
+  }
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[tag]));
+}
+
+function enlargeKeywordsOnPage(keywords) {
+  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  const nodesToModify = [];
+
+  // Escape regex special characters in keywords and join them
+  const escapedKeywords = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = new RegExp(`(${escapedKeywords.join('|')})`, 'gi');
+
+  while(node = walk.nextNode()) {
+    if (node.parentNode && 
+        node.parentNode.nodeName !== 'SCRIPT' && 
+        node.parentNode.nodeName !== 'STYLE' &&
+        node.parentNode.nodeName !== 'NOSCRIPT' &&
+        !node.parentNode.classList.contains('costar-enlarged-keyword')) {
+      if (pattern.test(node.nodeValue)) {
+        nodesToModify.push(node);
+      }
+    }
+  }
+
+  nodesToModify.forEach(textNode => {
+    const span = document.createElement('span');
+    const escapedText = escapeHTML(textNode.nodeValue);
+    
+    // We need to apply the pattern to the escaped text, but be careful if a keyword matches an HTML entity.
+    // For simplicity, we just run the replacement.
+    span.innerHTML = escapedText.replace(pattern, '<span class="costar-enlarged-keyword">$&</span>');
+    textNode.parentNode.replaceChild(span, textNode);
+  });
 }
 
 function renderCurrentResult() {
@@ -303,6 +415,11 @@ const buddyContainer = document.createElement('div');
 buddyContainer.id = 'costar-plugin';
 document.body.appendChild(buddyContainer);
 
+// ── drag handle ──
+const dragHandle = document.createElement('div');
+dragHandle.className = 'drag-handle';
+buddyContainer.appendChild(dragHandle);
+
 const video = document.createElement('video');
 video.src = chrome.runtime.getURL(IDLE_VIDEO_PATH);
 video.autoplay = true;
@@ -324,6 +441,45 @@ const chatOptions = document.createElement('div');
 chatOptions.className = 'chat-options';
 chatBox.appendChild(chatOptions);
 
+// ── dragging logic ──
+(function initDrag() {
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
 
-// console.log(video);
-// console.log(chatBox);
+  dragHandle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isDragging = true;
+
+    const rect = buddyContainer.getBoundingClientRect();
+
+    // Switch from bottom/right to top/left positioning on first drag
+    buddyContainer.style.bottom = 'auto';
+    buddyContainer.style.right = 'auto';
+    buddyContainer.style.left = rect.left + 'px';
+    buddyContainer.style.top = rect.top + 'px';
+
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+
+    let newLeft = e.clientX - offsetX;
+    let newTop = e.clientY - offsetY;
+
+    // Clamp to viewport
+    const maxLeft = window.innerWidth - buddyContainer.offsetWidth;
+    const maxTop = window.innerHeight - buddyContainer.offsetHeight;
+    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+    newTop = Math.max(0, Math.min(newTop, maxTop));
+
+    buddyContainer.style.left = newLeft + 'px';
+    buddyContainer.style.top = newTop + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+})();

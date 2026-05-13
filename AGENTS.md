@@ -7,3 +7,7 @@
 - All buddy and page actions must be authored in Yarn nodes using Yarn commands, for example `<<PlayAnimation twirl loop=false>>`.
 - `PlayAnimation` returns to the idle animation by default; only include `returnToIdle=false` when explicitly opting out.
 - Content scripts may evaluate triggers and jump to Yarn nodes, but action behavior should come from commands emitted by the active Yarn node.
+
+## Formatting
+
+- Don't format `.min.js` files, like `yarn-bound.min.js`.

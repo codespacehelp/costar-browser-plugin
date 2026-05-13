@@ -11,7 +11,9 @@
       "id": "url-costar-setup",
       "type": "url",
       "description": "Start setup flow on any URL containing costar-setup.",
-      "match": ["*costar-setup*"],
+      "match": [
+        "*costar-setup*"
+      ],
       "priority": 100,
       "oncePerPage": true,
       "yarnNode": "Setup"
@@ -28,7 +30,9 @@
         "https://www.hln.be/*",
         "https://hln.be/*",
         "https://www.hbvl.be/*",
-        "https://hbvl.be/*"
+        "https://hbvl.be/*",
+        "https://en.wikipedia.org/wiki/*",
+        "https://nl.wikipedia.org/wiki/*"
       ],
       "priority": 80,
       "oncePerUrl": true,
@@ -39,8 +43,16 @@
       "type": "visibleText",
       "description": "React when important visible keywords appear in prominent page text.",
       "match": {
-        "keywords": ["pricing", "deadline", "urgent"],
-        "selectors": ["h1", "h2", "[role='heading']"],
+        "keywords": [
+          "pricing",
+          "deadline",
+          "urgent"
+        ],
+        "selectors": [
+          "h1",
+          "h2",
+          "[role='heading']"
+        ],
         "minimumFontSizePx": 24,
         "minimumVisibleRatio": 0.75
       },
@@ -54,8 +66,8 @@
       "description": "React to rapid pointer movement that may indicate stress or searching.",
       "match": {
         "windowMs": 3000,
-        "minimumDistancePx": 1800,
-        "minimumDirectionChanges": 12
+        "minimumDistancePx": 2500,
+        "minimumDirectionChanges": 15
       },
       "priority": 60,
       "cooldownMs": 10000,
@@ -80,9 +92,9 @@
       "type": "scroll",
       "description": "React when the user scrolls quickly through the page.",
       "match": {
-        "windowMs": 2000,
-        "minimumDistancePx": 2500,
-        "minimumVelocityPxPerSecond": 1200
+        "windowMs": 500,
+        "minimumDistancePx": 1500,
+        "minimumVelocityPxPerSecond": 50
       },
       "priority": 55,
       "cooldownMs": 45000,
@@ -120,7 +132,7 @@
       "match": {
         "windowMs": 2000,
         "minimumClicks": 5,
-        "radiusPx": 40
+        "radiusPx": 80
       },
       "priority": 75,
       "cooldownMs": 60000,
@@ -143,7 +155,11 @@
       "type": "inputPattern",
       "description": "Suggested trigger: user repeatedly rewrites a search query.",
       "match": {
-        "selectors": ["input[type='search']", "input[name='q']", "textarea[name='q']"],
+        "selectors": [
+          "input[type='search']",
+          "input[name='q']",
+          "textarea[name='q']"
+        ],
         "minimumEdits": 4,
         "windowMs": 20000
       },
@@ -168,8 +184,15 @@
       "type": "visibleText",
       "description": "Suggested trigger: visible error or failure language appears.",
       "match": {
-        "keywords": ["error", "failed", "try again", "not found"],
-        "selectors": ["body"],
+        "keywords": [
+          "error",
+          "failed",
+          "try again",
+          "not found"
+        ],
+        "selectors": [
+          "body"
+        ],
         "minimumFontSizePx": 12,
         "minimumVisibleRatio": 0.5
       },

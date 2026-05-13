@@ -1,6 +1,8 @@
 title: Start
 ---
 <<DoNothing>>
+
+<<jump Setup>>
 ===
 title: Setup
 ---
@@ -37,17 +39,21 @@ title: ForceEnd
 ---
 Buddy: I wish you farewell and safe web searching.
 Buddy: / Signal lost. /
+
+<<PlayAnimation idle loop=true>>
+-> Restart connection.
+<<jump Setup>>
 ===
 title: OnStep1Interaction
 ---
 Buddy: How may I assist you?
 
--> Show setup demo.
-    <<jump SetupDemo>>
--> Show trigger demos.
+-> Show trigger commands.
     <<jump TriggerDemoMenu>>
--> Show action demos.
+-> Show action commands.
     <<jump ActionDemoMenu>>
+// -> Restart set-up.
+//     <<jump SetupDemo>>
 
 ===
 title: SetupDemo
@@ -60,7 +66,7 @@ Buddy: Setup flow placeholder text.
 ===
 title: TriggerDemoMenu
 ---
-Buddy: Trigger demo menu placeholder.
+Buddy: Here is an overview of the available triggers.
 
 -> URL pattern trigger.
     <<jump NewsSiteDetected>>
@@ -82,20 +88,21 @@ Buddy: Trigger demo menu placeholder.
 title: NewsSiteDetected
 ---
 <<PlayAnimation twirl loop=false>>
-Buddy: NewsSiteDetected.
+Buddy: I have detected a source of information.
+Buddy: Be wary of fake news.
 ===
 title: VisibleKeywordDetected
 ---
-Buddy: Visible keyword trigger placeholder.
+Buddy: Visible keyword trigger detected!
 <<PlayAnimation keyword_detected loop=false>>
-<<HighlightKeywords keywords="pricing,deadline,urgent" style="info">>
-Buddy: Visible heading keyword dialog placeholder.
+<<EnlargeKeywords keywords="pricing,deadline,urgent">>
+Buddy: I've enlarged some important keywords for you!
 <<PlayAnimation idle loop=true>>
 ===
 title: MouseHectic
 ---
 <<PlayAnimation hectic loop=false>>
-Buddy: Hectic mouse movement detected
+Buddy: Hectic mouse movement detected.
 ===
 title: UserIdle
 ---
@@ -107,7 +114,7 @@ Buddy: Idle dialog placeholder.
 title: FastScroll
 ---
 Buddy: Fast scrolling trigger placeholder.
-<<PlayAnimation scroll_detected loop=false>>
+<<PlayAnimation twirl loop=false>>
 <<ScrollPage direction="down" amount="viewport">>
 Buddy: Fast scroll dialog placeholder.
 <<PlayAnimation idle loop=true>>
@@ -144,7 +151,7 @@ Buddy: Suggested trigger demo menu placeholder.
 title: RageClicking
 ---
 Buddy: Repeated clicking trigger placeholder.
-<<PlayAnimation attention loop=false>>
+<<PlayAnimation hectic loop=false>>
 Buddy: Rage clicking dialog placeholder.
 <<PlayAnimation idle loop=true>>
 ===

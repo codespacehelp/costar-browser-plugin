@@ -1,33 +1,56 @@
 #costar-plugin {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: 480px;
-  height: 320px;
+  bottom: 40px;
+  right: 40px;
   z-index: 99999;
-  pointer-events: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  user-select: none;
 
+  /* ── drag handle ── */
+  & .drag-handle {
+    height: 24px;
+    background: rgb(40, 40, 40);
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  & .drag-handle:active {
+    cursor: grabbing;
+  }
+
+  & .drag-handle::after {
+    content: '';
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* ── video ── */
   & .video-player {
     width: 480px;
     height: 270px;
+    display: block;
   }
 
+  /* ── chat ── */
   & .chat-box {
-    width: 480px;
     height: 50px;
-    background: rgb(0 0 0 / 50%);
+    background: rgba(17, 0, 255, 0.75);
     color: white;
     font-family: sans-serif;
     font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 10px;
-    pointer-events: auto;
     cursor: pointer;
   }
 
@@ -52,4 +75,17 @@
     padding: 5px;
     cursor: pointer;
   }
+}
+
+/* ── enlarged keywords ── */
+.costar-enlarged-keyword {
+  font-size: 2em !important;
+  font-weight: 900 !important;
+  color: #ff0055 !important;
+  background-color: #ffebf0 !important;
+  padding: 0 4px !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease-in-out !important;
+  display: inline-block !important;
+  box-shadow: 0 4px 10px rgba(255, 0, 85, 0.3) !important;
 }
